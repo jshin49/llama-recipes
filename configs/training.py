@@ -7,6 +7,7 @@ from typing import ClassVar
 @dataclass
 class train_config:
     model_name: str="PATH/to/LLAMA/7B"
+    hf_cache_dir: str="hf_cache_dir"
     enable_fsdp: bool=False
     low_cpu_fsdp: bool=False
     run_validation: bool=True
