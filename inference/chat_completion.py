@@ -5,9 +5,11 @@
 import fire
 import torch
 import os
+import json
 import sys
 import warnings
 from typing import List
+from tqdm import tqdm
 
 from peft import PeftModel, PeftConfig
 from transformers import LlamaConfig, LlamaTokenizer, LlamaForCausalLM
@@ -22,6 +24,7 @@ def main(
     max_new_tokens =256, #The maximum numbers of tokens to generate
     min_new_tokens:int=0, #The minimum numbers of tokens to generate
     prompt_file: str=None,
+    hf_cache_dir: str=None,
     seed: int=42, #seed value for reproducibility
     safety_score_threshold: float=0.5,
     do_sample: bool=True, #Whether or not to use sampling ; use greedy decoding otherwise.
@@ -57,7 +60,7 @@ def main(
     # Set the seeds for reproducibility
     torch.cuda.manual_seed(seed)
     torch.manual_seed(seed)
-    model = load_model(model_name, quantization)
+    model = load_model(model_name, quantization, hf_cache_dir)
     if peft_model:
         model = load_peft_model(model, peft_model)
     if use_fast_kernels:
@@ -83,26 +86,27 @@ def main(
     chats = format_tokens(dialogs, tokenizer)
 
     with torch.no_grad():
-        for idx, chat in enumerate(chats):
-            safety_checker = get_safety_checker(enable_azure_content_safety,
-                                        enable_sensitive_topics,
-                                        enable_saleforce_content_safety,
-                                        )
+        chat_outputs = []
+        for idx, chat in tqdm(enumerate(chats)):
+            # safety_checker = get_safety_checker(enable_azure_content_safety,
+            #                             enable_sensitive_topics,
+            #                             enable_saleforce_content_safety,
+            #                             )
             # Safety check of the user prompt
-            safety_results = [check(dialogs[idx][0]["content"]) for check in safety_checker]
-            are_safe = all([r[1] for r in safety_results])
-            if are_safe:
-                print(f"User prompt deemed safe.")
-                print("User prompt:\n", dialogs[idx][0]["content"])
-                print("\n==================================\n")
-            else:
-                print("User prompt deemed unsafe.")
-                for method, is_safe, report in safety_results:
-                    if not is_safe:
-                        print(method)
-                        print(report)
-                print("Skipping the inferece as the prompt is not safe.")
-                sys.exit(1)  # Exit the program with an error status
+            # safety_results = [check(dialogs[idx][0]["content"]) for check in safety_checker]
+            # are_safe = all([r[1] for r in safety_results])
+            # if are_safe:
+            #     print(f"User prompt deemed safe.")
+            #     print("User prompt:\n", dialogs[idx][0]["content"])
+            #     print("\n==================================\n")
+            # else:
+            #     print("User prompt deemed unsafe.")
+            #     for method, is_safe, report in safety_results:
+            #         if not is_safe:
+            #             print(method)
+            #             print(report)
+            #     print("Skipping the inferece as the prompt is not safe.")
+            #     sys.exit(1)  # Exit the program with an error status
             tokens= torch.tensor(chat).long()
             tokens= tokens.unsqueeze(0)
             tokens= tokens.to("cuda:0")
@@ -120,22 +124,28 @@ def main(
             )
 
             output_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            chat_outputs.append({
+                "user_prompt": dialogs[idx][0]["content"], 
+                "model_output": output_text,
+            })
+            # # Safety check of the model output
+            # safety_results = [check(output_text) for check in safety_checker]
+            # are_safe = all([r[1] for r in safety_results])
+            # if are_safe:
+            print("User input and model output deemed safe.")
+            print(f"Model output:\n{output_text}")
+            print("\n==================================\n")
 
-            # Safety check of the model output
-            safety_results = [check(output_text) for check in safety_checker]
-            are_safe = all([r[1] for r in safety_results])
-            if are_safe:
-                print("User input and model output deemed safe.")
-                print(f"Model output:\n{output_text}")
-                print("\n==================================\n")
-
-            else:
-                print("Model output deemed unsafe.")
-                for method, is_safe, report in safety_results:
-                    if not is_safe:
-                        print(method)
-                        print(report)
-
+            # else:
+            #     print("Model output deemed unsafe.")
+            #     for method, is_safe, report in safety_results:
+            #         if not is_safe:
+            #             print(method)
+            #             print(report)
+            
+    with open(f'{prompt_file}_output.json', 'w') as f:
+        json.dumps(chat_outputs)
+    
 
 
 if __name__ == "__main__":

@@ -18,8 +18,9 @@ def main(
     model_name,
     peft_model: str=None,
     quantization: bool=False,
-    max_new_tokens =100, #The maximum numbers of tokens to generate
+    max_new_tokens = 100, #The maximum numbers of tokens to generate
     prompt_file: str=None,
+    hf_cache_dir: str=None,
     seed: int=42, #seed value for reproducibility
     do_sample: bool=True, #Whether or not to use sampling ; use greedy decoding otherwise.
     min_length: int=None, #The minimum length of the sequence to be generated, input prompt + min_new_tokens
@@ -52,7 +53,7 @@ def main(
     torch.cuda.manual_seed(seed)
     torch.manual_seed(seed)
     
-    model = load_model(model_name, quantization)
+    model = load_model(model_name, quantization, hf_cache_dir)
     if peft_model:
         model = load_peft_model(model, peft_model)
 
