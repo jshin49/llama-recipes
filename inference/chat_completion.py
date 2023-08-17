@@ -144,7 +144,7 @@ def main(
             #             print(report)
             
     with open(f'{prompt_file}_output.json', 'w') as f:
-        json.dumps(chat_outputs)
+        json.dump(chat_outputs, f)
     
 
 

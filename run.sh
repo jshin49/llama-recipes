@@ -13,4 +13,4 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun --nnodes 1 --nproc_per_node 4  llama_finet
 CUDA_VISIBLE_DEVICES=4,5,6,7 torchrun --nnodes 1 --nproc_per_node 4  llama_finetuning.py --enable_fsdp --pure_bf16 --model_name meta-llama/Llama-2-70b-chat-hf --use_peft --peft_method lora --output_dir lora_ckpts --hf_cache_dir /home/seungone/hf_cache --use_fast_kernels
 
 # chat inference
-CUDA_VISIBLE_DEVICES=4,5,6,7 python chat_completion.py --model_name meta-llama/Llama-2-70b-chat-hf --hf_cache_dir /home/seungone/hf_cache --prompt_file chats.json
+CUDA_VISIBLE_DEVICES=4,5,6,7 python chat_completion.py --model_name meta-llama/Llama-2-70b-chat-hf --hf_cache_dir /home/seungone/hf_cache --prompt_file chats.json --use_fast_inference
