@@ -1,15 +1,16 @@
-token=$1
-model=$2
-# model=meta-llama/Llama-2-7b-chat-hf
-num_shard=1
+model=$1
+port=$2
+device=$3
+token=$4
+num_shard=4
 volume=data
-port=3001
 
-docker run --gpus '"device=3"' \
+docker run --gpus '"device='$3'"' \
     --shm-size 1g \
     -e HUGGING_FACE_HUB_TOKEN=$token \
     -p $port:80 \
     -v "/home/seungone/hf_cache":/hf_cache \
+    -v "/home/seungone/kiml_ckpts":/kiml_ckpts \
     -v $PWD:$PWD ghcr.io/huggingface/text-generation-inference:latest \
     --model-id $model \
     --num-shard $num_shard \

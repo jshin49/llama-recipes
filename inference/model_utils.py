@@ -23,11 +23,10 @@ def load_peft_model(model, peft_model):
     return peft_model
 
 # Loading the model from config to load FSDP checkpoints into that
-def load_llama_from_config(config_path, hf_cache_dir):
+def load_llama_from_config(config_path):
     model_config = LlamaConfig.from_pretrained(config_path) 
     model = LlamaForCausalLM(
         config=model_config,
-        cache_dir=hf_cache_dir,
     )
     return model
     
