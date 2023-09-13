@@ -1,27 +1,3 @@
-{
-  "retryOn429": true,
-  "retryCount": 5,
-  "fallbackRetryDelay": "10s",
-  "httpHeaders": [
-    {
-      "urls": [
-        "https://docs.github.com/",
-        "https://help.github.com/"
-      ],
-      "headers": {
-        "Accept-Encoding": "zstd, br, gzip, deflate"
-      }
-    }
-  ],
-  "ignorePatterns": [
-    {
-      "pattern": "^http(s)?://127.0.0.1.*"
-    },
-    {
-      "pattern": "^http(s)?://localhost.*"
-    },
-    {
-      "pattern": "https://www.intel.com/content/www/us/en/developer/articles/news/llama2.html"
-    }
-  ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:204381648bf9a1b3811bbf6b47162522e4b3dfbfa56802c71a2883dcd12fdd34
+size 533
